@@ -1,0 +1,91 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class ProductCRUD {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String url = "jdbc:mysql://localhost:3306/your_database_name";
+        String username = "your_username";
+        String password = "your_password";
+        Connection connection = null;
+
+        try {
+            connection = DriverManager.getConnection(url, username, password);
+            connection.setAutoCommit(false);
+            Statement statement = connection.createStatement();
+            
+            while (true) {
+                System.out.println("1. Create Product");
+                System.out.println("2. Read Product");
+                System.out.println("3. Update Product");
+                System.out.println("4. Delete Product");
+                System.out.println("5. Exit");
+                System.out.print("Choose an option: ");
+                int choice = scanner.nextInt();
+                
+                if (choice == 1) {
+                    System.out.print("Enter ProductID: ");
+                    int productID = scanner.nextInt();
+                    System.out.print("Enter ProductName: ");
+                    String productName = scanner.next();
+                    System.out.print("Enter Price: ");
+                    double price = scanner.nextDouble();
+                    System.out.print("Enter Quantity: ");
+                    int quantity = scanner.nextInt();
+                    String query = "INSERT INTO Product (ProductID, ProductName, Price, Quantity) VALUES (?, ?, ?, ?)";
+                    PreparedStatement ps = connection.prepareStatement(query);
+                    ps.setInt(1, productID);
+                    ps.setString(2, productName);
+                    ps.setDouble(3, price);
+                    ps.setInt(4, quantity);
+                    ps.executeUpdate();
+                    connection.commit();
+                } else if (choice == 2) {
+                    System.out.print("Enter ProductID to read: ");
+                    int productID = scanner.nextInt();
+                    String query = "SELECT * FROM Product WHERE ProductID = ?";
+                    PreparedStatement ps = connection.prepareStatement(query);
+                    ps.setInt(1, productID);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        System.out.println("ProductID: " + rs.getInt("ProductID"));
+                        System.out.println("ProductName: " + rs.getString("ProductName"));
+                        System.out.println("Price: " + rs.getDouble("Price"));
+                        System.out.println("Quantity: " + rs.getInt("Quantity"));
+                    }
+                } else if (choice == 3) {
+                    System.out.print("Enter ProductID to update: ");
+                    int productID = scanner.nextInt();
+                    System.out.print("Enter new Price: ");
+                    double price = scanner.nextDouble();
+                    System.out.print("Enter new Quantity: ");
+                    int quantity = scanner.nextInt();
+                    String query = "UPDATE Product SET Price = ?, Quantity = ? WHERE ProductID = ?";
+                    PreparedStatement ps = connection.prepareStatement(query);
+                    ps.setDouble(1, price);
+                    ps.setInt(2, quantity);
+                    ps.setInt(3, productID);
+                    ps.executeUpdate();
+                    connection.commit();
+                } else if (choice == 4) {
+                    System.out.print("Enter ProductID to delete: ");
+                    int productID = scanner.nextInt();
+                    String query = "DELETE FROM Product WHERE ProductID = ?";
+                    PreparedStatement ps = connection.prepareStatement(query);
+                    ps.setInt(1, productID);
+                    ps.executeUpdate();
+                    connection.commit();
+                } else if (choice == 5) {
+                    break;
+                } else {
+                    System.out.println("Invalid choice, try again.");
+                }
+            }
+
+            connection.close();
+            scanner.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
